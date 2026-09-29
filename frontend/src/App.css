@@ -1,0 +1,160 @@
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #1a2332;
+}
+
+h1 {
+  margin: 0 0 1.75rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.todo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #d8e0ea;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.field-row {
+  display: flex;
+  gap: 1rem;
+}
+
+label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4a5d73;
+}
+
+input,
+select {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #b8c5d4;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  color: #1a2332;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid #2f6fed;
+  outline-offset: 1px;
+  border-color: #2f6fed;
+}
+
+.add-btn,
+.delete-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 0.65rem 1.25rem;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-btn {
+  align-self: flex-start;
+  background: #2f6fed;
+  color: #fff;
+}
+
+.add-btn:hover {
+  background: #1f5ad4;
+}
+
+.delete-btn {
+  background: #e8edf3;
+  color: #8b2e2e;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.delete-btn:hover {
+  background: #f5d5d5;
+}
+
+.error {
+  color: #8b2e2e;
+  background: #fceaea;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin: 0 0 1rem;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4a5d73;
+  border-bottom: 2px solid #d8e0ea;
+  margin-bottom: 0.5rem;
+}
+
+.todo-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem 0.25rem;
+  border-bottom: 1px solid #e4ebf2;
+}
+
+.todo-note {
+  font-size: 1.05rem;
+}
+
+.todo-meta {
+  color: #4a5d73;
+  font-size: 0.95rem;
+}
+
+.empty {
+  color: #6b7c90;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+@media (max-width: 520px) {
+  .field-row {
+    flex-direction: column;
+  }
+
+  .list-header,
+  .todo-item {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .list-header span:last-child {
+    display: none;
+  }
+
+  .delete-btn {
+    justify-self: start;
+    margin-top: 0.25rem;
+  }
+}

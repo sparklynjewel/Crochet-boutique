@@ -1,0 +1,12 @@
+.dockerignore
+.git
+.idea
+.venv
+venv
+**/__pycache__
+**/*.pyc
+frontend/node_modules
+backend/todos.db
+*.log
+.env
+.env.*

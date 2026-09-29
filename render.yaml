@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: todo-app
+    runtime: docker
+    plan: free
+    healthCheckPath: /todos
+    envVars:
+      # On Render free tier, disk is wiped on redeploy. Upgrade and add a
+      # persistent disk (mount /data) for longer-term storage.
+      - key: DATABASE_PATH
+        value: /app/backend/todos.db
