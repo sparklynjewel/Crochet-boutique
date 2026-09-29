@@ -78,38 +78,40 @@ function App() {
       <h1>Todo List</h1>
 
       <form className="todo-form" onSubmit={handleAdd}>
-        <div className="field">
-          <label htmlFor="note">Note</label>
-          <input
-            id="note"
-            type="text"
-            placeholder="Type a note..."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </div>
+        <div className="field-row">
+          <div className="field field-note">
+            <label htmlFor="note">Note</label>
+            <input
+              id="note"
+              type="text"
+              placeholder="Type a note..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
 
-        <div className="field">
-          <label htmlFor="time">Date and Time</label>
-          <input
-            id="time"
-            type="datetime-local"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-        </div>
+          <div className="field">
+            <label htmlFor="time">Date and Time</label>
+            <input
+              id="time"
+              type="datetime-local"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
 
-        <div className="field">
-          <label htmlFor="priority">Priority</label>
-          <select
-            id="priority"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
+          <div className="field">
+            <label htmlFor="priority">Priority</label>
+            <select
+              id="priority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
         </div>
 
         <div className="options">
