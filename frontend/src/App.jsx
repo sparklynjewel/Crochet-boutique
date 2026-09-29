@@ -79,7 +79,7 @@ function App() {
 
       <form className="todo-form" onSubmit={handleAdd}>
         <div className="field-row">
-          <div className="field field-note">
+          <div className="field">
             <label htmlFor="note">Note</label>
             <input
               id="note"
