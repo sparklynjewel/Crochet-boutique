@@ -7,16 +7,10 @@
 }
 
 h1 {
-  margin: 0 0 0.35rem;
+  margin: 0 0 1.75rem;
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-.subtitle {
-  margin: 0 0 1.75rem;
-  color: #4a5d73;
-  font-size: 1rem;
 }
 
 .todo-form {
@@ -32,15 +26,10 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  flex: 1;
 }
 
-.field-row {
-  display: flex;
-  gap: 1rem;
-}
-
-label {
+label,
+.options-label {
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -66,6 +55,13 @@ select:focus {
   border-color: #2f6fed;
 }
 
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
 .add-btn,
 .delete-btn {
   border: none;
@@ -78,7 +74,6 @@ select:focus {
 }
 
 .add-btn {
-  align-self: flex-start;
   background: #2f6fed;
   color: #fff;
 }
@@ -106,35 +101,22 @@ select:focus {
   margin: 0 0 1rem;
 }
 
-.list-header {
-  display: grid;
-  grid-template-columns: 1.4fr 1.2fr 0.7fr auto;
-  gap: 1rem;
-  padding: 0.5rem 0.25rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #4a5d73;
-  border-bottom: 2px solid #d8e0ea;
-  margin-bottom: 0.5rem;
-}
-
 .todo-item {
-  display: grid;
-  grid-template-columns: 1.4fr 1.2fr 0.7fr auto;
-  gap: 1rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   padding: 0.85rem 0.25rem;
   border-bottom: 1px solid #e4ebf2;
 }
 
 .todo-note {
+  margin: 0 0 0.25rem;
   font-size: 1.05rem;
 }
 
-.todo-meta,
-.todo-priority {
+.todo-details {
+  margin: 0;
   color: #4a5d73;
   font-size: 0.95rem;
 }
@@ -146,22 +128,8 @@ select:focus {
 }
 
 @media (max-width: 520px) {
-  .field-row {
-    flex-direction: column;
-  }
-
-  .list-header,
   .todo-item {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
-  }
-
-  .list-header span:last-child {
-    display: none;
-  }
-
-  .delete-btn {
-    justify-self: start;
-    margin-top: 0.25rem;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

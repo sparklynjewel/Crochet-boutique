@@ -39,7 +39,7 @@ function App() {
   async function handleAdd(event) {
     event.preventDefault()
     if (!note.trim()) {
-      setError('Please type a task before adding.')
+      setError('Please type a note before adding.')
       return
     }
 
@@ -76,76 +76,75 @@ function App() {
   return (
     <div className="app">
       <h1>Todo List</h1>
-      <p className="subtitle">Add tasks, set a date and time, and choose a priority.</p>
 
       <form className="todo-form" onSubmit={handleAdd}>
         <div className="field">
-          <label htmlFor="note">Task</label>
+          <label htmlFor="note">Note</label>
           <input
             id="note"
             type="text"
-            placeholder="What do you need to do?"
+            placeholder="Type a note..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
-        <div className="field-row">
-          <div className="field">
-            <label htmlFor="time">Date and Time</label>
-            <input
-              id="time"
-              type="datetime-local"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </div>
-
-          <div className="field">
-            <label htmlFor="priority">Priority</label>
-            <select
-              id="priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
-          </div>
+        <div className="field">
+          <label htmlFor="time">Date and Time</label>
+          <input
+            id="time"
+            type="datetime-local"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
         </div>
 
-        <button type="submit" className="add-btn">
-          Add
-        </button>
+        <div className="field">
+          <label htmlFor="priority">Priority</label>
+          <select
+            id="priority"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+
+        <div className="options">
+          <span className="options-label">Options</span>
+          <button type="submit" className="add-btn">
+            Add
+          </button>
+        </div>
       </form>
 
       {error && <p className="error">{error}</p>}
 
       <div className="todo-list">
-        <div className="list-header">
-          <span>Task</span>
-          <span>Date &amp; Time</span>
-          <span>Priority</span>
-          <span></span>
-        </div>
-
         {todos.length === 0 && (
-          <p className="empty">No todos yet. Add your first task above!</p>
+          <p className="empty">No todos yet. Add one above!</p>
         )}
 
         {todos.map((todo) => (
           <div className="todo-item" key={todo.id}>
-            <span className="todo-note">{todo.note}</span>
-            <span className="todo-meta">{formatDateTime(todo.time)}</span>
-            <span className="todo-priority">{todo.priority}</span>
-            <button
-              type="button"
-              className="delete-btn"
-              onClick={() => handleDelete(todo.id)}
-            >
-              Delete
-            </button>
+            <div className="todo-body">
+              <p className="todo-note">{todo.note}</p>
+              <p className="todo-details">
+                {formatDateTime(todo.time)} · {todo.priority}
+              </p>
+            </div>
+            <div className="options">
+              <span className="options-label">Options</span>
+              <button
+                type="button"
+                className="delete-btn"
+                onClick={() => handleDelete(todo.id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
