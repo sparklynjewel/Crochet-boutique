@@ -39,7 +39,7 @@ function App() {
   async function handleAdd(event) {
     event.preventDefault()
     if (!note.trim()) {
-      setError('Please type a note before adding.')
+      setError('Please type a task before adding.')
       return
     }
 
@@ -75,15 +75,16 @@ function App() {
 
   return (
     <div className="app">
-      <h1>My Todo List</h1>
+      <h1>Todo List</h1>
+      <p className="subtitle">Add tasks, set a date and time, and choose a priority.</p>
 
       <form className="todo-form" onSubmit={handleAdd}>
         <div className="field">
-          <label htmlFor="note">Note</label>
+          <label htmlFor="note">Task</label>
           <input
             id="note"
             type="text"
-            placeholder="Type a task..."
+            placeholder="What do you need to do?"
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
@@ -123,21 +124,21 @@ function App() {
 
       <div className="todo-list">
         <div className="list-header">
-          <span>Note</span>
-          <span>Date and Time and Priority</span>
+          <span>Task</span>
+          <span>Date &amp; Time</span>
+          <span>Priority</span>
           <span></span>
         </div>
 
         {todos.length === 0 && (
-          <p className="empty">No tasks yet. Add one above!</p>
+          <p className="empty">No todos yet. Add your first task above!</p>
         )}
 
         {todos.map((todo) => (
           <div className="todo-item" key={todo.id}>
             <span className="todo-note">{todo.note}</span>
-            <span className="todo-meta">
-              {formatDateTime(todo.time)} · {todo.priority}
-            </span>
+            <span className="todo-meta">{formatDateTime(todo.time)}</span>
+            <span className="todo-priority">{todo.priority}</span>
             <button
               type="button"
               className="delete-btn"
