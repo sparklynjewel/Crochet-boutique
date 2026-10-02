@@ -1,11 +1,19 @@
 services:
   - type: web
-    name: todo-app
+    name: crochet-boutique
     runtime: docker
     plan: free
-    healthCheckPath: /todos
+    healthCheckPath: /api/health
     envVars:
-      # On Render free tier, disk is wiped on redeploy. Upgrade and add a
-      # persistent disk (mount /data) for longer-term storage.
-      - key: DATABASE_PATH
-        value: /app/backend/todos.db
+      - key: DATABASE_URL
+        sync: false
+      - key: MAILGUN_API_KEY
+        sync: false
+      - key: MAILGUN_DOMAIN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
