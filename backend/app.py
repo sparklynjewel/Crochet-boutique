@@ -414,6 +414,64 @@ def get_config():
     })
 
 
+@app.get("/api/cart")
+def get_user_cart():
+    """Retrieve database-backed cart for a user to sync across web and mobile."""
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT uc.product_id AS id, p.title, p.price::float AS price, p.image_url, p.category, p.stock, uc.quantity
+                    FROM user_carts uc
+                    JOIN products p ON uc.product_id = p.id
+                    WHERE uc.user_id = %s;
+                    """,
+                    (user_id,),
+                )
+                items = cur.fetchall()
+        return jsonify(items)
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch cart: {str(e)}"}), 500
+
+
+@app.post("/api/cart")
+def sync_user_cart():
+    """Synchronize or update cart items for a user across devices."""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    items = data.get("items") or []
+
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Replace existing user cart
+                cur.execute("DELETE FROM user_carts WHERE user_id = %s;", (user_id,))
+                for item in items:
+                    product_id = item.get("id")
+                    quantity = int(item.get("quantity", 1))
+                    if product_id:
+                        cur.execute(
+                            """
+                            INSERT INTO user_carts (user_id, product_id, quantity)
+                            VALUES (%s, %s, %s)
+                            ON CONFLICT (user_id, product_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+                            """,
+                            (user_id, product_id, quantity),
+                        )
+            conn.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": f"Failed to sync cart: {str(e)}"}), 500
+
+
 @app.post("/api/stripe/create-checkout-session")
 def create_stripe_checkout_session():
     """
@@ -597,30 +655,47 @@ def verify_stripe_session():
 @app.post("/api/auth/google")
 def auth_google():
     """
-    Verify Google OAuth credential and persist/retrieve user in Supabase.
+    Verify Google OAuth credential or direct email login,
+    and persist/retrieve user in Supabase.
     """
     data = request.get_json() or {}
-    credential = data.get("credential")
+    credential = (data.get("credential") or "").strip()
+    name_input = (data.get("name") or "").strip()
 
     if not credential:
-        return jsonify({"error": "Google credential token is required."}), 400
+        return jsonify({"error": "Google credential token or email is required."}), 400
+
+    email = ""
+    google_id = None
+    name = name_input
+    avatar_url = ""
+
+    # Check if credential is a valid Google JWT or direct email
+    if "@" in credential and "." in credential and len(credential.split(".")) != 3:
+        # Direct email login
+        email = credential.lower()
+        if not name:
+            name = email.split("@")[0].capitalize()
+    else:
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                credential,
+                google_requests.Request(),
+                GOOGLE_CLIENT_ID or None,
+                clock_skew_in_seconds=60,
+            )
+            google_id = idinfo.get("sub")
+            email = idinfo.get("email")
+            name = idinfo.get("name", name or "")
+            avatar_url = idinfo.get("picture", "")
+        except Exception as e:
+            print(f"[Auth] Google verification error: {e}")
+            return jsonify({"error": f"Invalid Google authentication token: {str(e)}"}), 401
+
+    if not email:
+        return jsonify({"error": "Email not provided."}), 400
 
     try:
-        idinfo = id_token.verify_oauth2_token(
-            credential,
-            google_requests.Request(),
-            GOOGLE_CLIENT_ID or None,
-            clock_skew_in_seconds=60,
-        )
-
-        google_id = idinfo.get("sub")
-        email = idinfo.get("email")
-        name = idinfo.get("name", "")
-        avatar_url = idinfo.get("picture", "")
-
-        if not email:
-            return jsonify({"error": "Email not provided by Google."}), 400
-
         with get_db() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -628,9 +703,9 @@ def auth_google():
                     INSERT INTO users (google_id, email, name, avatar_url)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (email) DO UPDATE
-                    SET google_id = COALESCE(users.google_id, EXCLUDED.google_id),
-                        name = EXCLUDED.name,
-                        avatar_url = EXCLUDED.avatar_url
+                    SET google_id = COALESCE(EXCLUDED.google_id, users.google_id),
+                        name = COALESCE(NULLIF(EXCLUDED.name, ''), users.name),
+                        avatar_url = COALESCE(NULLIF(EXCLUDED.avatar_url, ''), users.avatar_url)
                     RETURNING id, google_id, email, name, avatar_url;
                     """,
                     (google_id, email, name, avatar_url),
@@ -650,8 +725,8 @@ def auth_google():
             }
         )
     except Exception as e:
-        print(f"[Auth] Google verification error: {e}")
-        return jsonify({"error": f"Invalid Google authentication token: {str(e)}"}), 401
+        print(f"[Auth DB Error]: {e}")
+        return jsonify({"error": f"Database user sync failed: {str(e)}"}), 500
 
 
 @app.get("/api/orders/my-orders")
