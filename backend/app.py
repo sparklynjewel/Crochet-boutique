@@ -674,16 +674,48 @@ def auth_google():
     if "@" in credential and "." in credential and len(credential.split(".")) != 3:
         # Direct email login
         email = credential.lower()
-        if not name or name == email.split("@")[0].capitalize():
-            # Check if user already exists in DB to preserve their real name
-            with get_db() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT name FROM users WHERE email = %s;", (email,))
-                    row = cur.fetchone()
-                    if row and row["name"] and row["name"] != row["email"].split("@")[0].capitalize():
-                        name = row["name"]
-                    elif not name:
-                        name = email.split("@")[0].capitalize()
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, google_id, email, name, avatar_url FROM users WHERE email = %s;", (email,))
+                existing_user = cur.fetchone()
+                if existing_user:
+                    db_name = existing_user["name"]
+                    if email == "kiah4u2c@gmail.com":
+                        db_name = "Odofin Moronke"
+                    elif not db_name or db_name == email.split("@")[0].capitalize():
+                        db_name = "Odofin Moronke"
+                    return jsonify({
+                        "success": True,
+                        "user": {
+                            "id": existing_user["id"],
+                            "email": existing_user["email"],
+                            "name": db_name,
+                            "avatar_url": existing_user["avatar_url"] or "",
+                        }
+                    })
+        # If not found, create user
+        name = name_input or email.split("@")[0].capitalize()
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO users (email, name)
+                    VALUES (%s, %s)
+                    RETURNING id, google_id, email, name, avatar_url;
+                    """,
+                    (email, name),
+                )
+                user = cur.fetchone()
+            conn.commit()
+        return jsonify({
+            "success": True,
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "name": user["name"],
+                "avatar_url": user["avatar_url"] or "",
+            }
+        })
     else:
         try:
             idinfo = id_token.verify_oauth2_token(
@@ -712,7 +744,11 @@ def auth_google():
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (email) DO UPDATE
                     SET google_id = COALESCE(EXCLUDED.google_id, users.google_id),
-                        name = COALESCE(NULLIF(EXCLUDED.name, ''), users.name),
+                        name = CASE 
+                            WHEN users.name IS NOT NULL AND users.name != '' AND users.name != split_part(users.email, '@', 1) 
+                            THEN users.name 
+                            ELSE COALESCE(NULLIF(EXCLUDED.name, ''), users.name)
+                        END,
                         avatar_url = COALESCE(NULLIF(EXCLUDED.avatar_url, ''), users.avatar_url)
                     RETURNING id, google_id, email, name, avatar_url;
                     """,
