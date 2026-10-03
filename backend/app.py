@@ -674,8 +674,16 @@ def auth_google():
     if "@" in credential and "." in credential and len(credential.split(".")) != 3:
         # Direct email login
         email = credential.lower()
-        if not name:
-            name = email.split("@")[0].capitalize()
+        if not name or name == email.split("@")[0].capitalize():
+            # Check if user already exists in DB to preserve their real name
+            with get_db() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT name FROM users WHERE email = %s;", (email,))
+                    row = cur.fetchone()
+                    if row and row["name"] and row["name"] != row["email"].split("@")[0].capitalize():
+                        name = row["name"]
+                    elif not name:
+                        name = email.split("@")[0].capitalize()
     else:
         try:
             idinfo = id_token.verify_oauth2_token(
