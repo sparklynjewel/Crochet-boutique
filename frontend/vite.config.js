@@ -4,6 +4,10 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // Older Android 8 phones can still have a pre-Chrome-111 browser installed.
+    target: 'chrome64',
+  },
   server: {
     // During local development, forward API calls to the Flask backend
     proxy: {

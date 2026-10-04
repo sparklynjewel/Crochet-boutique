@@ -9,7 +9,18 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <p id="shop-loading" role="status" style="padding:24px;font-family:Arial,sans-serif">Loading CrochetStudio…</p>
+    </div>
+    <noscript>Please enable JavaScript in your browser to open CrochetStudio.</noscript>
+    <script>
+      window.setTimeout(function () {
+        var loading = document.getElementById('shop-loading');
+        if (loading) {
+          loading.textContent = 'This page is taking longer to load. Try refreshing, or update Chrome and try again.';
+        }
+      }, 12000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
