@@ -51,10 +51,32 @@ export default function App() {
 
   const googleBtnRef = useRef(null)
 
-  // Persist cart to localStorage
+  // Fetch server-side cart when user logs in or mounts
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/cart?user_id=${user.id}`)
+        .then((r) => r.json())
+        .then((serverCart) => {
+          if (Array.isArray(serverCart) && serverCart.length > 0) {
+            setCart(serverCart)
+            localStorage.setItem('shop_cart', JSON.stringify(serverCart))
+          }
+        })
+        .catch(() => {})
+    }
+  }, [user])
+
+  // Persist cart to localStorage & sync with Supabase backend if user is logged in
   useEffect(() => {
     localStorage.setItem('shop_cart', JSON.stringify(cart))
-  }, [cart])
+    if (user?.id) {
+      fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, items: cart }),
+      }).catch(() => {})
+    }
+  }, [cart, user])
 
   // Fetch backend config (Google + Stripe)
   useEffect(() => {

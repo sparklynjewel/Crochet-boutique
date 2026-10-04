@@ -674,43 +674,32 @@ def auth_google():
     if "@" in credential and "." in credential and len(credential.split(".")) != 3:
         # Direct email login
         email = credential.lower()
-        with get_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id, google_id, email, name, avatar_url FROM users WHERE email = %s;", (email,))
-                existing_user = cur.fetchone()
-                if existing_user:
-                    return jsonify({
-                        "success": True,
-                        "user": {
-                            "id": existing_user["id"],
-                            "email": existing_user["email"],
-                            "name": existing_user["name"] or "Odofin Moronke",
-                            "avatar_url": existing_user["avatar_url"] or "",
-                        }
-                    })
-        # If not found, create user
-        name = name_input or email.split("@")[0].capitalize()
+        display_name = name_input if name_input else ("Odofin Moronke" if email == "kiah4u2c@gmail.com" else email.split("@")[0].capitalize())
         with get_db() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                     INSERT INTO users (email, name)
                     VALUES (%s, %s)
+                    ON CONFLICT (email) DO UPDATE
+                    SET name = CASE WHEN EXCLUDED.name IS NOT NULL AND EXCLUDED.name != '' AND EXCLUDED.name != split_part(users.email, '@', 1) THEN EXCLUDED.name ELSE users.name END
                     RETURNING id, google_id, email, name, avatar_url;
                     """,
-                    (email, name),
+                    (email, display_name),
                 )
-                user = cur.fetchone()
+                existing_user = cur.fetchone()
             conn.commit()
-        return jsonify({
-            "success": True,
-            "user": {
-                "id": user["id"],
-                "email": user["email"],
-                "name": user["name"],
-                "avatar_url": user["avatar_url"] or "",
-            }
-        })
+
+        if existing_user:
+            return jsonify({
+                "success": True,
+                "user": {
+                    "id": existing_user["id"],
+                    "email": existing_user["email"],
+                    "name": "Odofin Moronke" if email == "kiah4u2c@gmail.com" else (existing_user["name"] or display_name),
+                    "avatar_url": existing_user["avatar_url"] or "",
+                }
+            })
     else:
         try:
             idinfo = id_token.verify_oauth2_token(
