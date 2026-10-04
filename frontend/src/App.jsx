@@ -51,19 +51,25 @@ export default function App() {
 
   const googleBtnRef = useRef(null)
 
-  // Fetch server-side cart when user logs in or mounts
+  // Fetch server-side cart when user logs in, mounts, or every 3 seconds (real-time cross-device sync)
   useEffect(() => {
-    if (user?.id) {
+    if (!user?.id) return
+
+    const fetchCart = () => {
       fetch(`/api/cart?user_id=${user.id}`)
         .then((r) => r.json())
         .then((serverCart) => {
-          if (Array.isArray(serverCart) && serverCart.length > 0) {
+          if (Array.isArray(serverCart)) {
             setCart(serverCart)
             localStorage.setItem('shop_cart', JSON.stringify(serverCart))
           }
         })
         .catch(() => {})
     }
+
+    fetchCart()
+    const interval = setInterval(fetchCart, 3000) // Poll every 3 seconds for mobile-to-web sync
+    return () => clearInterval(interval)
   }, [user])
 
   // Persist cart to localStorage & sync with Supabase backend if user is logged in
