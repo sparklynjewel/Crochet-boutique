@@ -75,7 +75,7 @@ export default function App() {
   // Persist cart to localStorage & sync with Supabase backend if user is logged in
   useEffect(() => {
     localStorage.setItem('shop_cart', JSON.stringify(cart))
-    if (user?.id) {
+    if (user?.id && cart.length > 0) {
       fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
