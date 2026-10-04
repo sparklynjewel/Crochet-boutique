@@ -679,17 +679,12 @@ def auth_google():
                 cur.execute("SELECT id, google_id, email, name, avatar_url FROM users WHERE email = %s;", (email,))
                 existing_user = cur.fetchone()
                 if existing_user:
-                    db_name = existing_user["name"]
-                    if email == "kiah4u2c@gmail.com":
-                        db_name = "Odofin Moronke"
-                    elif not db_name or db_name == email.split("@")[0].capitalize():
-                        db_name = "Odofin Moronke"
                     return jsonify({
                         "success": True,
                         "user": {
                             "id": existing_user["id"],
                             "email": existing_user["email"],
-                            "name": db_name,
+                            "name": existing_user["name"] or "Odofin Moronke",
                             "avatar_url": existing_user["avatar_url"] or "",
                         }
                     })
