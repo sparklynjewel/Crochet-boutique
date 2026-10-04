@@ -1,0 +1,13 @@
+node_modules/
+.expo/
+dist/
+build/
+*.ipa
+*.apk
+*.aab
+*.mobileprovision
+*.p12
+credentials.json
+.env
+.env.*
+!.env.example

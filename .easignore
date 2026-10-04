@@ -1,0 +1,21 @@
+# EAS archives this Git repository from its root, even when invoked in mobile/.
+/backend/
+/frontend/
+/Dockerfile
+/render.yaml
+node_modules/
+.expo/
+dist/
+build/
+*.log
+*.ipa
+*.apk
+*.aab
+*.mobileprovision
+*.p12
+credentials.json
+.env
+.env.*
+.idea/
+.agents/
+.codex/

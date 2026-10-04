@@ -2,18 +2,22 @@
   "expo": {
     "name": "CrochetStudio",
     "slug": "crochet-mobile",
+    "scheme": "crochetstudio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backend": "#ffffff"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.crochet.studio"
+      "bundleIdentifier": "com.crochet.studio",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.crochet.studio",
@@ -23,11 +27,17 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-status-bar",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "cbc381ad-d4c5-41aa-95b9-da37e05b858f"
+      }
+    },
+    "owner": "sparklynjewel"
   }
 }
