@@ -23,14 +23,7 @@ export default function App() {
   })
 
   // Cart state
-  const [cart, setCart] = useState(() => {
-    try {
-      const saved = localStorage.getItem('shop_cart')
-      return saved ? JSON.parse(saved) : []
-    } catch {
-      return []
-    }
-  })
+  const [cart, setCart] = useState([])
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   // Checkout modal & state
