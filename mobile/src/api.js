@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://crochet-boutique-0si4.onrender.com';
+export const API_BASE_URL = 'https://crochet-boutique-0si4.onrender.com';
 
 export async function fetchProducts(category = '') {
   try {

@@ -81,6 +81,18 @@ def init_db():
                     """
                 )
 
+                # Shared saved shopping bags for the web and mobile apps.
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS user_carts (
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+                        quantity INTEGER NOT NULL CHECK (quantity > 0),
+                        PRIMARY KEY (user_id, product_id)
+                    );
+                    """
+                )
+
                 # 3. Orders table
                 cur.execute(
                     """

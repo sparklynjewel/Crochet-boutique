@@ -13,7 +13,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { fetchProducts, placeOrder, loginUser, fetchUserCart, syncUserCart } from './src/api';
+import { fetchProducts, placeOrder, loginUser, API_BASE_URL } from './src/api';
+import { useSyncedCart } from './src/useSyncedCart';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 export default function App() {
@@ -21,12 +22,12 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // User auth state
   const [user, setUser] = useState(null);
+  const { cart, setCart, cartError, flushCart } = useSyncedCart(user?.id, API_BASE_URL);
   const [loginEmail, setLoginEmail] = useState('');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
@@ -42,13 +43,6 @@ export default function App() {
   useEffect(() => {
     loadProducts();
   }, [selectedCategory]);
-
-  // Sync cart to server whenever cart changes and user is logged in
-  useEffect(() => {
-    if (user) {
-      syncUserCart(user.id, cart);
-    }
-  }, [cart, user]);
 
   async function loadProducts() {
     setLoading(true);
@@ -68,11 +62,7 @@ export default function App() {
       setCustomerEmail(res.user.email);
       setCustomerName(res.user.name);
       setIsLoginOpen(false);
-      const serverCart = await fetchUserCart(res.user.id);
-      if (serverCart && serverCart.length > 0) {
-        setCart(serverCart);
-      }
-      alert(`Signed in as ${res.user.name}! Cart synchronized.`);
+      alert(`Signed in as ${res.user.name}! Loading your saved cart.`);
     } else {
       alert('Login failed');
     }
@@ -161,7 +151,7 @@ export default function App() {
               <View style={styles.userBadge}>
                 <Text style={styles.userBadgeText}>Hi, {user.name.split(' ')[0]}</Text>
               </View>
-              <TouchableOpacity style={styles.signOutBtn} onPress={() => { setUser(null); setCart([]); alert('Signed out.'); }}>
+              <TouchableOpacity style={styles.signOutBtn} onPress={async () => { await flushCart(); setUser(null); alert('Signed out. Your saved cart will be here when you sign back in.'); }}>
                 <Text style={styles.signOutBtnText}>Sign Out</Text>
               </TouchableOpacity>
             </View>
@@ -269,6 +259,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            {cartError ? <Text accessibilityRole="alert">{cartError}</Text> : null}
             {cart.length === 0 ? (
               <View style={styles.centerBox}>
                 <Text style={styles.emptyText}>Your bag is empty.</Text>

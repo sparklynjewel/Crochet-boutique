@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import './App.css'
+import { useSyncedCart } from './useSyncedCart'
 
 export default function App() {
   const [products, setProducts] = useState([])
@@ -23,7 +24,7 @@ export default function App() {
   })
 
   // Cart state
-  const [cart, setCart] = useState([])
+  const { cart, setCart, cartError, flushCart } = useSyncedCart(user?.id)
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   // Checkout modal & state
@@ -43,39 +44,6 @@ export default function App() {
   const [loadingOrders, setLoadingOrders] = useState(false)
 
   const googleBtnRef = useRef(null)
-
-  // Fetch server-side cart when user logs in, mounts, or every 3 seconds (real-time cross-device sync)
-  useEffect(() => {
-    if (!user?.id) return
-
-    const fetchCart = () => {
-      fetch(`/api/cart?user_id=${user.id}`)
-        .then((r) => r.json())
-        .then((serverCart) => {
-          if (Array.isArray(serverCart)) {
-            setCart(serverCart)
-            localStorage.setItem('shop_cart', JSON.stringify(serverCart))
-          }
-        })
-        .catch(() => {})
-    }
-
-    fetchCart()
-    const interval = setInterval(fetchCart, 3000) // Poll every 3 seconds for mobile-to-web sync
-    return () => clearInterval(interval)
-  }, [user])
-
-  // Persist cart to localStorage & sync with Supabase backend if user is logged in
-  useEffect(() => {
-    localStorage.setItem('shop_cart', JSON.stringify(cart))
-    if (user?.id && cart.length > 0) {
-      fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, items: cart }),
-      }).catch(() => {})
-    }
-  }, [cart, user])
 
   // Fetch backend config (Google + Stripe)
   useEffect(() => {
@@ -188,7 +156,8 @@ export default function App() {
     }
   }
 
-  function handleSignOut() {
+  async function handleSignOut() {
+    await flushCart()
     setUser(null)
     localStorage.removeItem('shop_user')
   }
@@ -466,6 +435,7 @@ export default function App() {
             </div>
 
             <div className="cart-drawer-body">
+              {cartError && <p role="alert">{cartError}</p>}
               {cart.length === 0 ? (
                 <div className="cart-empty">
                   <p>Your bag is empty.</p>
