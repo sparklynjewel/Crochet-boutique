@@ -62,13 +62,35 @@ project, use the account intended for this assignment.
 After the build completes, open the installation link in Safari on the registered
 iPhone and install the app. Open CrochetStudio from its home screen icon.
 
-## Authentication still to finish
+## Google sign-in setup for the installed Android app
 
-The mobile app currently submits an email to the same backend used by the web
-app. This restores the same user's cart, but entering an email does not verify
-ownership of the account. The website uses Google sign-in. Proper mobile Google
-sign-in and its client/redirect settings still need to be completed before claiming
-equivalent authentication in the assignment demonstration.
+The updated source uses native Google sign-in and sends Google's ID token to the
+same `/api/auth/google` endpoint as the website. It reads the website's web client
+ID from `/api/config`. It does not sign a user in by accepting a typed email.
+The previous APK (version 1.0.0) still has the email-entry form; a new APK must be
+built and installed to use this change.
+
+Register an Android OAuth client in the **same Google Cloud project** as the
+website's web OAuth client (project number `1072336752393`):
+
+- Name: `CrochetStudio Android`.
+- Package name: `com.crochet.studio`.
+- Signing certificate SHA-1: `93:69:14:B3:E2:23:F4:07:00:9A:CC:8C:61:63:43:B0:0B:29:27:20`.
+
+Use Google Cloud Console → Google Auth Platform → Clients → Create client →
+Android. The SHA-1 above was read from the successfully verified preview APK.
+Continue to use the same EAS signing key for subsequent Android preview builds.
+An Android client ID does not replace the web client ID on the backend.
+
+Android uses the library's native autolinking and the Google Play services
+dependency; this setup does not require Firebase. The native sign-in module
+requires a rebuilt installed app. Expo Go can show the shop but cannot run this
+native Google sign-in. iOS Google sign-in additionally needs its own client ID
+and URL scheme before an iPhone build can be used for authentication.
+
+This is not a complete API authorization redesign: existing cart/order endpoints
+still identify users with `user_id`, and the backend retains its legacy email
+login path. Do not describe the whole API as protected against impersonation.
 
 ## Screen recording checklist
 

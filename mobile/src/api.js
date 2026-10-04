@@ -15,18 +15,26 @@ export async function fetchProducts(category = '') {
   }
 }
 
-export async function loginUser(email, name) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential: email, name: name || 'Odofin Moronke' }),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('API Error (loginUser):', error);
-    return { success: false };
+export async function fetchAuthConfig() {
+  const response = await fetch(`${API_BASE_URL}/api/config`);
+  if (!response.ok) throw new Error('Could not load sign-in settings. Please try again.');
+  return response.json();
+}
+
+export async function loginWithGoogle(idToken) {
+  if (typeof idToken !== 'string' || idToken.includes('@') || idToken.split('.').length !== 3) {
+    throw new Error('A verified Google sign-in credential is required.');
   }
+  const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credential: idToken }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success || !result.user?.id) {
+    throw new Error(result.error || 'Could not sign in. Please try again.');
+  }
+  return result;
 }
 
 export async function fetchUserCart(userId) {

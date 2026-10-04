@@ -13,8 +13,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { fetchProducts, placeOrder, loginUser, API_BASE_URL } from './src/api';
+import { fetchProducts, placeOrder, fetchAuthConfig, loginWithGoogle, API_BASE_URL } from './src/api';
 import { useSyncedCart } from './src/useSyncedCart';
+import { authenticateWithGoogle } from './src/googleAuth';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 export default function App() {
@@ -28,7 +29,7 @@ export default function App() {
   // User auth state
   const [user, setUser] = useState(null);
   const { cart, setCart, cartError, flushCart } = useSyncedCart(user?.id, API_BASE_URL);
-  const [loginEmail, setLoginEmail] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   // Checkout form state
@@ -52,20 +53,50 @@ export default function App() {
   }
 
   async function handleLogin() {
-    if (!loginEmail || !loginEmail.includes('@')) {
-      alert('Please enter a valid email.');
-      return;
-    }
-    const res = await loginUser(loginEmail, 'Odofin Moronke');
-    if (res.success && res.user) {
+    if (signingIn) return;
+    setSigningIn(true);
+    try {
+      // Load on demand so Expo Go can still show the shop without this native module.
+      const { GoogleSignin } = await import('@react-native-google-signin/google-signin');
+      const res = await authenticateWithGoogle({
+        google: GoogleSignin,
+        loadConfig: fetchAuthConfig,
+        exchangeCredential: loginWithGoogle,
+      });
+      if (!res) return;
       setUser(res.user);
       setCustomerEmail(res.user.email);
       setCustomerName(res.user.name);
       setIsLoginOpen(false);
       alert(`Signed in as ${res.user.name}! Loading your saved cart.`);
-    } else {
-      alert('Login failed');
+    } catch (error) {
+      if (error.code === 'SIGN_IN_CANCELLED' || error.code === '12501') return;
+      if (error.code === 'PLAY_SERVICES_NOT_AVAILABLE') {
+        alert('Please update Google Play services on your phone and try signing in again.');
+      } else if (error.code === '10' || error.message?.includes('DEVELOPER_ERROR')) {
+        alert('Google sign-in setup for this app is not complete yet. Please try again after setup is finished.');
+      } else if (error.message?.includes('RNGoogleSignin')) {
+        alert('Please use the installed CrochetStudio app for Google sign-in.');
+      } else {
+        alert(error.message || 'Could not sign in. Please check your connection and try again.');
+      }
+    } finally {
+      setSigningIn(false);
     }
+  }
+
+  async function handleSignOut() {
+    await flushCart();
+    try {
+      const { GoogleSignin } = await import('@react-native-google-signin/google-signin');
+      await GoogleSignin.signOut();
+    } catch {
+      // Disconnect the shop account even if the Google service is unavailable.
+    }
+    setUser(null);
+    setCustomerEmail('');
+    setCustomerName('');
+    alert('Signed out. Your saved cart will be here when you sign back in.');
   }
 
   function addToCart(product) {
@@ -151,7 +182,7 @@ export default function App() {
               <View style={styles.userBadge}>
                 <Text style={styles.userBadgeText}>Hi, {user.name.split(' ')[0]}</Text>
               </View>
-              <TouchableOpacity style={styles.signOutBtn} onPress={async () => { await flushCart(); setUser(null); alert('Signed out. Your saved cart will be here when you sign back in.'); }}>
+              <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
                 <Text style={styles.signOutBtnText}>Sign Out</Text>
               </TouchableOpacity>
             </View>
@@ -239,10 +270,9 @@ export default function App() {
                 <Ionicons name="close" size={24} color="#111827" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Google Account Email</Text>
-            <TextInput style={styles.input} placeholder="kiah4u2c@gmail.com" value={loginEmail} onChangeText={setLoginEmail} keyboardType="email-address" autoCapitalize="none" />
-            <TouchableOpacity style={styles.checkoutBtn} onPress={handleLogin}>
-              <Text style={styles.checkoutBtnText}>Sign In</Text>
+            <Text style={styles.label}>Choose the same Google account you use on the website to restore your saved cart.</Text>
+            <TouchableOpacity style={styles.checkoutBtn} onPress={handleLogin} disabled={signingIn}>
+              {signingIn ? <ActivityIndicator color="#fff" /> : <Text style={styles.checkoutBtnText}>Continue with Google</Text>}
             </TouchableOpacity>
           </View>
         </View>

@@ -3,7 +3,7 @@
     "name": "CrochetStudio",
     "slug": "crochet-mobile",
     "scheme": "crochetstudio",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,6 +20,7 @@
       }
     },
     "android": {
+      "versionCode": 2,
       "package": "com.crochet.studio",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
